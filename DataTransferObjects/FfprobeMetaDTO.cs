@@ -1,17 +1,17 @@
 namespace Almostengr.MusicOrganizer.DataTransferObjects
 {
-    public class FfprobeMetaDTO
+    public record FfprobeMetaDTO
     {
         public Format Format { get; set; }
     }
 
-    public class Format
+    public record Format
     {
         // public string Filename { get; set; }
         public Tags Tags { get; set; }
     }
 
-    public class Tags
+    public record Tags
     {
         public string Album { get; set; }
         public string Album_Artist { get; set; }

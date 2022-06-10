@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <Content Include="../README.md" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="README.md" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -2,19 +2,11 @@
 
 using System.Diagnostics;
 using Almostengr.MusicOrganizer.DataTransferObjects;
+using Almostengr.MusicOrganizer.Extensions;
 using Newtonsoft.Json;
 
-int fileCounter = 0;
-const string OLD_MUSIC_DIRECTORY = "/home/almostengineer/Downloads";
-const string DUPLICATES_DIRECTORY = $"{OLD_MUSIC_DIRECTORY}/duplicates";
+const string OLD_MUSIC_DIRECTORY = "/home/almostengineer/Downloads/oldMusic";
 const string NEW_MUSIC_DIRECTORY = "/home/almostengineer/Downloads/newMusic";
-
-const string FFPROBE_BINARY = "/usr/bin/ffprobe";
-
-if (Directory.Exists(DUPLICATES_DIRECTORY) == false)
-{
-    Directory.CreateDirectory(DUPLICATES_DIRECTORY);
-}
 
 if (Directory.Exists(NEW_MUSIC_DIRECTORY) == false)
 {
@@ -27,62 +19,90 @@ if (Directory.Exists(OLD_MUSIC_DIRECTORY) == false)
     return;
 }
 
-string[] directories = Directory.GetDirectories(OLD_MUSIC_DIRECTORY);
+ProcessMusicFiles(OLD_MUSIC_DIRECTORY);
 
-foreach (string directory in directories)
+
+static void ProcessMusicFiles(string directoryName)
 {
-    // string[] musicFiles = Directory.GetFiles(directory);
-    string[] musicFiles = Directory.GetFiles(directory, "*mp3");
+    Console.WriteLine($"Checking contents of {directoryName}");
 
-    foreach (string musicFile in musicFiles)
+    if (Directory.Exists(directoryName) == false)
+    {
+        return;
+    }
+
+    foreach (var directory in Directory.GetDirectories(directoryName))
+    {
+        ProcessMusicFiles(directory);
+    }
+
+    UpdateAndMoveMusicFiles(directoryName);
+} // end method
+
+static void UpdateAndMoveMusicFiles(string directory)
+{
+    foreach (string musicFile in Directory.GetFiles(directory, "*mp3"))
     {
         Console.WriteLine($"Processing {musicFile}");
-        fileCounter++;
 
         // ffprobe -v quiet -print_format json -show_format -show_streams "music file.mp3"
         Process ffprobe = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = FFPROBE_BINARY,
-                Arguments = $"-v quiet -print_format json -show_format \"{musicFile}\"",
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = false,
-                UseShellExecute = true,
+                FileName = "/bin/bash",
+                Arguments = $"-c \"/usr/bin/ffprobe -v quiet -print_format json -show_format \\\"{musicFile}\\\"\"",
+                WorkingDirectory = OLD_MUSIC_DIRECTORY,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
             }
         };
 
         ffprobe.Start();
         ffprobe.WaitForExit();
 
-        FfprobeMetaDTO metaData = JsonConvert.DeserializeObject<FfprobeMetaDTO>(ffprobe.StandardError.ReadToEnd().ToString());
+        string output = ffprobe.StandardOutput.ReadToEnd();
 
-        string artistDirectory = Path.Combine(NEW_MUSIC_DIRECTORY, metaData.Format.Tags.Album_Artist);
+        ffprobe.Close();
+        ffprobe.Dispose();
+
+        FfprobeMetaDTO metaData = JsonConvert.DeserializeObject<FfprobeMetaDTO>(output);
+
+        string artistDirectory = Path.Combine(NEW_MUSIC_DIRECTORY, metaData.ToArtistOrAlbumArtist());
 
         if (Directory.Exists(artistDirectory) == false)
         {
             Directory.CreateDirectory(artistDirectory);
         }
 
-        string albumDirectory = Path.Combine(artistDirectory, metaData.Format.Tags.Album);
+        string albumDirectory =
+            Path.Combine(artistDirectory, metaData.Format.Tags.Album.ToAlbumNameOrDefault());
 
         if (Directory.Exists(albumDirectory) == false)
         {
             Directory.CreateDirectory(albumDirectory);
         }
 
-        string newMusicFileName = Path.Combine(albumDirectory, $"{metaData.Format.Tags.Track_Int}_{metaData.Format.Tags.Title}_{metaData.Format.Tags.Album_Artist}.mp3");
-        string destination = newMusicFileName;
+        string newMusicFileName = Path.Combine(
+            albumDirectory,
+            $"{metaData.Format.Tags.Track.ToTrackNumberOrDefault()}_{metaData.Format.Tags.Title.ToTrackTitleOrDefault()}_{metaData.ToArtistOrAlbumArtist()}.mp3");
 
-        if (File.Exists(newMusicFileName) == false)
+        if (File.Exists(newMusicFileName))
         {
-            // destination = Path.Combine(DUPLICATES_DIRECTORY, musicFile);
-
-            File.Move(musicFile, destination);
-            Console.WriteLine($"Moved {musicFile} to {destination})");
+            Console.WriteLine($"{newMusicFileName} already exists. {musicFile} was not moved and considered a duplicate.");
+            continue;
         }
-    }
-}
 
-Console.WriteLine($"Processed {fileCounter} mp3 files");
+        try
+        {
+            File.Move(musicFile, newMusicFileName);
+            Console.WriteLine($"Moved {musicFile} to {newMusicFileName})");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unable to move file. {ex.Message}");
+        }
+
+    }
+} // end method

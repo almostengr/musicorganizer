@@ -38,6 +38,71 @@
                 "${workspaceFolder}/Almostengr.MusicOrganizer.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Clean Release Project",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "clean",
+                "-c",
+                "Release",
+            ],
+            "group": "none"
+        },
+        {
+            "label": "Publish Release",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "publish",
+                "-r",
+                "linux-x64",
+                "-c",
+                "Release",
+                "--self-contained",
+                "Almostengr.MusicOrganizer.csproj"
+            ],
+            "group": "none",
+            "dependsOn": ["Clean Release Project"]
+        },
+        {
+            "label": "Deploy Local",
+            "command": "scp",
+            "type": "shell",
+            "args": [
+                "-pr",
+                "${workspaceRoot}/Almostengr.MusicOrganizer/bin/Release/net6.0/linux-x64/publish/*",
+                "iamadmin@media://home/iamadmin/musicorganizer/",
+            ],
+            "group": "none",
+            "dependsOn": ["Publish Release"],
+        },
+        {
+            "label": "Package TAR Release",
+            "command": "tar",
+            "type": "shell",
+            "args": [
+                "-czvf",
+                "${workspaceRoot}/Almostengr.MusicOrganizer.tar.gz",
+                "-C",
+                "${workspaceRoot}/bin/Release/net6.0/linux-x64/publish",
+                "."
+            ],
+            "dependsOn": ["Publish Release"],
+        },
+        {
+            "label": "Tag Release",
+            "command" : "git",
+            "type": "shell",
+            "args": [
+                "tag",
+                "-a",
+                "\"v6.$(date +%y.%m.%d)\"",
+                "-m",
+                "\"version 6.$(date +%y.%m.%d)\""
+            ],
+            "dependsOn": ["Package TAR Release"],
         }
     ]
 }

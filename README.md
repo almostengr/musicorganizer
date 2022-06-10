@@ -11,3 +11,5 @@ job of this.
 That's where this application comes in. It looks at the meta tag data for each of the files and organizes
 them based on that meta data. When duplicate files are found, they are placed in a duplicates directory. 
 Each file move is logged in the console for further analysis.
+
+https://www.technical-recipes.com/2016/how-to-run-processes-and-obtain-the-output-in-c/

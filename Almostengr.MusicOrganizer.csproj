@@ -5,10 +5,18 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <Company>Robinson Handy and Technology Services LLC</Company>
+    <Copyright>Copyright © $([System.DateTime]::UtcNow.ToString(yyyy)) Robinson Handy and Technology Services</Copyright>
+    <Product>Music Organizer</Product>
+    <Authors>Kenny Robinson</Authors>
+    <AssemblyName>Almostengr.MusicOrganizer</AssemblyName>
+    <RootNamespace>Almostengr.MusicOrganizer</RootNamespace>
+    <Version>6.$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <Content Include="README.md" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

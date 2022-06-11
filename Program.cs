@@ -7,7 +7,6 @@ if (args.Length != 4)
     Console.WriteLine("Not enough arguments passed");
     Console.WriteLine();
     Console.WriteLine("Usage");
-    Console.WriteLine();
     Console.WriteLine("Almostengr.MusicOrganizer.dll -old <original directory> -new <new directory>");
     return;
 }

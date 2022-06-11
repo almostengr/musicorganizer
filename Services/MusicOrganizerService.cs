@@ -27,7 +27,7 @@ namespace Almostengr.MusicOrganizer.Services
             ProcessMusicFiles(_oldMusicDirectory);
         }
 
-        void ProcessMusicFiles(string directoryName)
+        private void ProcessMusicFiles(string directoryName)
         {
             Console.WriteLine($"Checking contents of {directoryName}");
 
@@ -44,7 +44,7 @@ namespace Almostengr.MusicOrganizer.Services
             UpdateAndMoveMusicFiles(directoryName);
         }
 
-        void UpdateAndMoveMusicFiles(string directory)
+        private void UpdateAndMoveMusicFiles(string directory)
         {
             foreach (string musicFile in Directory.GetFiles(directory, "*mp3"))
             {

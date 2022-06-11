@@ -3,7 +3,7 @@ using Almostengr.MusicOrganizer.DataTransferObjects;
 
 namespace Almostengr.MusicOrganizer.Extensions
 {
-    public static class Extensions
+    public static class FfprobeMetaExtensions
     {
         private const string DEFAULT_TRACK_NUMBER = "00";
 
@@ -28,7 +28,7 @@ namespace Almostengr.MusicOrganizer.Extensions
             return string.IsNullOrEmpty(split[0]) ? DEFAULT_TRACK_NUMBER : split[0];
         }
 
-        public static string ToArtistOrAlbumArtist(this FfprobeMetaDTO metaDto)
+        public static string ToArtistOrAlbumArtistOrDefault(this FfprobeMetaDTO metaDto)
         {
             if (string.IsNullOrEmpty(metaDto.Format.Tags.Album_Artist) == false)
             {
